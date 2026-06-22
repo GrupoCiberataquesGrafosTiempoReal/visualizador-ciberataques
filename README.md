@@ -39,7 +39,7 @@ Asegúrate de tener instalado [Node.js](https://nodejs.org/) (versión 16 o supe
 
 ### 2. Clonar el repositorio
 ```bash
-git clone [https://github.com/TuOrganizacion/visualizador-ciberataques.git](https://github.com/TuOrganizacion/visualizador-ciberataques.git)
+git clone [https://github.com/GrupoCiberataquesGrafosTiempoReal/visualizador-ciberataques.git](https://github.com/GrupoCiberataquesGrafosTiempoReal/visualizador-ciberataques.git)
 cd visualizador-ciberataques
 ```
 
