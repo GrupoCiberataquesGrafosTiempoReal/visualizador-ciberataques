@@ -15,7 +15,7 @@ const GraphVisualizer = () => {
   const [graphData, setGraphData] = useState({ nodes: [], links: [] });
   const nodesStateRef = useRef(new Map()); 
   
-  const [timeWindow, setTimeWindow] = useState(5);
+  const [timeWindow, setTimeWindow] = useState(30);
   const [selectedElement, setSelectedElement] = useState(null);
   
   const [filters, setFilters] = useState({
@@ -460,10 +460,10 @@ const GraphVisualizer = () => {
           onChange={(e) => setTimeWindow(Number(e.target.value))}
           style={{ width: '100%', padding: '8px', borderRadius: '4px', backgroundColor: '#222', color: 'white', border: '1px solid #555', marginBottom: '20px' }}
         >
-          <option value={5}>Últimos 5 segundos</option>
-          <option value={10}>Últimos 10 segundos</option>
           <option value={30}>Últimos 30 segundos</option>
-          <option value={60}>Último 1 minuto</option>
+          <option value={300}>Últimos 5 minutos</option>
+          <option value={900}>Últimos 15 minutos</option>
+          <option value={1800}>Últimos 30 minutos</option>
         </select>
         
         <div style={{ borderTop: '1px solid #444', paddingTop: '15px', marginBottom: '15px' }}>
