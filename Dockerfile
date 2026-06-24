@@ -1,0 +1,16 @@
+FROM node:22-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm install
+
+COPY . .
+
+RUN npm run build
+
+EXPOSE 5173
+
+CMD ["npm", "run", "preview", "--", "--host", "0.0.0.0", "--port", "5173"]
+
+#En caso de que se quiera lanzar como dev: CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "5173"]

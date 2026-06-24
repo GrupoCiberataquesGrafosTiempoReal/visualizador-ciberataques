@@ -18,6 +18,9 @@ dist-ssr/
 *.csv
 *.pcap
 
+# Ignorar archivo Python para pruebas
+*.ipynb
+
 # Entornos virtuales de Python y caché
 __pycache__/
 *.py[cod]
