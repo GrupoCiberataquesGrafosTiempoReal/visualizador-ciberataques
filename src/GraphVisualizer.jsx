@@ -48,7 +48,7 @@ const GraphVisualizer = () => {
     });
   };
 
-  // --- LÓGICA DE FOCUS MODE (Calcula qué elementos iluminar y cuáles atenuar) ---
+// --- LÓGICA DE FOCUS MODE ---
   const { highlightedNodes, highlightedLinks } = useMemo(() => {
     const hNodes = new Set();
     const hLinks = new Set();
@@ -60,13 +60,13 @@ const GraphVisualizer = () => {
           const srcId = typeof link.source === 'object' ? link.source.id : link.source;
           const tgtId = typeof link.target === 'object' ? link.target.id : link.target;
           if (srcId === selectedElement.id || tgtId === selectedElement.id) {
-            hLinks.add(link.uid);
+            hLinks.add(link.internalId);
             hNodes.add(srcId);
             hNodes.add(tgtId);
           }
         });
       } else if (selectedElement.type === 'link') {
-        hLinks.add(selectedElement.uid);
+        hLinks.add(selectedElement.internalId);
         const srcId = typeof selectedElement.source === 'object' ? selectedElement.source.id : selectedElement.source;
         const tgtId = typeof selectedElement.target === 'object' ? selectedElement.target.id : selectedElement.target;
         hNodes.add(srcId);
@@ -96,7 +96,9 @@ const GraphVisualizer = () => {
         result.records.forEach(record => {
           const sourceNode = record.get('n').properties;
           const targetNode = record.get('m').properties;
-          const relationship = record.get('rel').properties;
+          const relObject = record.get('rel'); 
+          const relationship = relObject.properties; 
+          const uniqueNeo4jId = relObject.elementId || relObject.identity.low.toString();
 
           if (!newNodesMap.has(sourceNode.address)) {
             newNodesMap.set(sourceNode.address, { id: sourceNode.address, isLocal: sourceNode.is_local, role: 'origen' });
@@ -111,14 +113,18 @@ const GraphVisualizer = () => {
             const existingNode = newNodesMap.get(targetNode.address);
             if (existingNode.role === 'origen') existingNode.role = 'ambos';
           }
+          let captureTime = '-';
+          if (relationship.created_at) {
+            captureTime = new Date(relationship.created_at.toString()).toLocaleTimeString();
+          }
 
           rawLinks.push({
             source: sourceNode.address,
             target: targetNode.address,
             isMalicious: relationship.label_binary === 'True' || relationship.label_binary === true,
             tactic: relationship.label_tactic,
-            timestamp: relationship.ts,
             uid: relationship.uid,
+            internalId: uniqueNeo4jId,
             duration: relationship.duration,
             origBytes: getInt(relationship.orig_bytes),
             respBytes: getInt(relationship.resp_bytes),
@@ -129,7 +135,8 @@ const GraphVisualizer = () => {
             port: getInt(relationship.dest_port) ?? 'N/A', 
             proto: relationship.proto,
             service: relationship.service,
-            connState: relationship.conn_state
+            connState: relationship.conn_state,
+            createdAt: captureTime 
           });
         });
 
@@ -438,7 +445,7 @@ const GraphVisualizer = () => {
               {renderAttrRow('Bytes Perdidos', selectedElement.missedBytes)}
               {renderAttrRow('Paquetes Origen', selectedElement.origPkts)}
               {renderAttrRow('Paquetes Destino', selectedElement.respPkts)}
-              {renderAttrRow('Captura (TS)', selectedElement.timestamp ? new Date(selectedElement.timestamp * 1000).toLocaleTimeString() : '-')}
+              {renderAttrRow('Captura (Hora BD)', selectedElement.createdAt)}
             </div>
           )}
           
@@ -497,17 +504,14 @@ const GraphVisualizer = () => {
           
           linkColor={link => {
             if (selectedElement) {
-              // Si hacemos clic en una conexión EXACTA, se vuelve BLANCO brillante
-              if (selectedElement.type === 'link' && selectedElement.uid === link.uid) return '#ffffff';
-              // Si la conexión no está involucrada en lo que hemos seleccionado, la volvemos casi invisible
-              if (!highlightedLinks.has(link.uid)) return 'rgba(100, 100, 100, 0.05)';
+              if (selectedElement.type === 'link' && selectedElement.internalId === link.internalId) return '#ffffff';
+              if (!highlightedLinks.has(link.internalId)) return 'rgba(100, 100, 100, 0.05)';
             }
             return link.isMalicious ? '#ff4d4d' : 'rgba(69, 181, 73, 0.3)';
           }}
           
           linkWidth={link => {
-            // Hacemos el enlace muy ancho si es el que estamos inspeccionando
-            if (selectedElement && selectedElement.type === 'link' && selectedElement.uid === link.uid) return 6;
+            if (selectedElement && selectedElement.type === 'link' && selectedElement.internalId === link.internalId) return 6;
             return link.isMalicious ? 2.5 : 1;
           }}
           
@@ -516,8 +520,7 @@ const GraphVisualizer = () => {
           linkDirectionalArrowRelPos={1}
           
           linkDirectionalArrowColor={link => {
-            // Ocultamos las flechas del tráfico atenuado para no ensuciar la vista
-            if (selectedElement && !highlightedLinks.has(link.uid)) return 'rgba(0,0,0,0)'; 
+            if (selectedElement && !highlightedLinks.has(link.internalId)) return 'rgba(0,0,0,0)'; 
             return link.isMalicious ? '#ff4d4d' : 'rgba(69, 181, 73, 0.8)';
           }}
           
