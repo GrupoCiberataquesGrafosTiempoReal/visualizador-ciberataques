@@ -79,14 +79,12 @@ const GraphVisualizer = () => {
   useEffect(() => {
     const fetchData = async () => {
       const session = driver.session({ database: 'TFM' });
-      const currentTs = Date.now() / 1000; 
-
       try {
         const result = await session.run(`
           MATCH (n:IP)-[rel:NETWORK_CONNECTION]->(m:IP)
-          WHERE rel.ts >= ($currentTs - toFloat($timeWindow)) AND rel.ts <= $currentTs
+          WHERE rel.created_at >= (datetime() - duration({seconds: toInteger($timeWindow)}))
           RETURN n, rel, m
-        `, { currentTs, timeWindow });
+        `, { timeWindow });
 
         const newNodesMap = new Map();
         const rawLinks = [];
