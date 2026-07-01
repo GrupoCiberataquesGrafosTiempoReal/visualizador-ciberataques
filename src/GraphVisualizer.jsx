@@ -5,6 +5,7 @@ import neo4j from 'neo4j-driver';
 const NEO4J_URI = import.meta.env.VITE_NEO4J_URI || 'bolt://localhost:7687';
 const NEO4J_USER = import.meta.env.VITE_NEO4J_USER || 'neo4j';
 const NEO4J_PASSWORD = import.meta.env.VITE_NEO4J_PASSWORD || 'password_por_defecto';
+const NEO4J_DB_NAME = import.meta.env.VITE_NEO4J_DB_NAME || 'neo4j';
 
 const driver = neo4j.driver(
   NEO4J_URI, 
@@ -13,7 +14,7 @@ const driver = neo4j.driver(
 
 const GraphVisualizer = () => {
   const [graphData, setGraphData] = useState({ nodes: [], links: [] });
-  const nodesStateRef = useRef(new Map()); 
+  const nodesStateRef = useRef(new Map());
   
   const [timeWindow, setTimeWindow] = useState(30);
   const [selectedElement, setSelectedElement] = useState(null);
@@ -78,7 +79,7 @@ const GraphVisualizer = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const session = driver.session({ database: 'TFM' });
+      const session = driver.session({ database: NEO4J_DB_NAME });
       try {
         const result = await session.run(`
           MATCH (n:IP)-[rel:NETWORK_CONNECTION]->(m:IP)
