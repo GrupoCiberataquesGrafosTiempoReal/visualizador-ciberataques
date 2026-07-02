@@ -3,6 +3,11 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        - VITE_NEO4J_URI=${VITE_NEO4J_URI}
+        - VITE_NEO4J_DB_NAME=${VITE_NEO4J_DB_NAME}
+        - VITE_NEO4J_USER=${VITE_NEO4J_USER}
+        - VITE_NEO4J_PASSWORD=${VITE_NEO4J_PASSWORD}
     container_name: frontend
     ports:
       - "5173:5173"

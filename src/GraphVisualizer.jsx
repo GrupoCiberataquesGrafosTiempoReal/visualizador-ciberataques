@@ -7,6 +7,7 @@ const NEO4J_USER = import.meta.env.VITE_NEO4J_USER || 'neo4j';
 const NEO4J_PASSWORD = import.meta.env.VITE_NEO4J_PASSWORD || 'password_por_defecto';
 const NEO4J_DB_NAME = import.meta.env.VITE_NEO4J_DB_NAME || 'neo4j';
 
+console.log("Variables Vite:", import.meta.env);
 const driver = neo4j.driver(
   NEO4J_URI, 
   neo4j.auth.basic(NEO4J_USER, NEO4J_PASSWORD)
@@ -99,17 +100,17 @@ const GraphVisualizer = () => {
           const relationship = relObject.properties; 
           const uniqueNeo4jId = relObject.elementId || relObject.identity.low.toString();
 
-          if (!newNodesMap.has(sourceNode.address)) {
-            newNodesMap.set(sourceNode.address, { id: sourceNode.address, isLocal: sourceNode.is_local, role: 'origen' });
+          if (!newNodesMap.has(sourceNode.ip)) {
+            newNodesMap.set(sourceNode.ip, { id: sourceNode.ip, isLocal: sourceNode.is_local, role: 'origen' });
           } else {
-            const existingNode = newNodesMap.get(sourceNode.address);
+            const existingNode = newNodesMap.get(sourceNode.ip);
             if (existingNode.role === 'destino') existingNode.role = 'ambos';
           }
 
-          if (!newNodesMap.has(targetNode.address)) {
-            newNodesMap.set(targetNode.address, { id: targetNode.address, isLocal: targetNode.is_local, role: 'destino' });
+          if (!newNodesMap.has(targetNode.ip)) {
+            newNodesMap.set(targetNode.ip, { id: targetNode.ip, isLocal: targetNode.is_local, role: 'destino' });
           } else {
-            const existingNode = newNodesMap.get(targetNode.address);
+            const existingNode = newNodesMap.get(targetNode.ip);
             if (existingNode.role === 'origen') existingNode.role = 'ambos';
           }
           let captureTime = '-';
@@ -118,8 +119,8 @@ const GraphVisualizer = () => {
           }
 
           rawLinks.push({
-            source: sourceNode.address,
-            target: targetNode.address,
+            source: sourceNode.ip,
+            target: targetNode.ip,
             isMalicious: relationship.label_binary === 'True' || relationship.label_binary === true,
             tactic: relationship.label_tactic,
             uid: relationship.uid,
@@ -135,7 +136,8 @@ const GraphVisualizer = () => {
             proto: relationship.proto,
             service: relationship.service,
             connState: relationship.conn_state,
-            createdAt: captureTime 
+            createdAt: captureTime,
+            confidence: relationship.confidence
           });
         });
 
@@ -445,6 +447,7 @@ const GraphVisualizer = () => {
               {renderAttrRow('Paquetes Origen', selectedElement.origPkts)}
               {renderAttrRow('Paquetes Destino', selectedElement.respPkts)}
               {renderAttrRow('Captura (Hora BD)', selectedElement.createdAt)}
+              {renderAttrRow('Confianza', selectedElement.confidence)}
             </div>
           )}
           
